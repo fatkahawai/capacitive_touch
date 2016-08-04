@@ -48,8 +48,11 @@ time.sleep(5)
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.connect(('google.com', 0))
 localIp = s.getsockname()[0]
+s.close()
+
 print('my IP address on local LAN is '+localIp)
 r = requests.post(url+'/ip?address='+localIp)
+print(r.status_code)
 
 r = requests.get(url+'/activity')
 print(r.status_code)
