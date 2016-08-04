@@ -1,9 +1,14 @@
+# code for the capactive touch Pi Hat. 
+# when an input is touched or released, call web REST API on server
+#
+# Usage: sudo python touch_sensor.py http://52.64.65.111:8080 
 #
 # Author: Bob
 #
 import sys
 import time
 import requests
+import socket
 
 import Adafruit_MPR121.MPR121 as MPR121
 
@@ -17,7 +22,7 @@ if len(sys.argv) < 2:
 url = sys.argv[1]
 
 print('Adafruit MPR121 Capacitive Touch Sensor Test')
-print('posting touches to URL ', url)
+print('posting activities to REST API at URL '+ url)
 
 # Create MPR121 instance.
 cap = MPR121.MPR121()
@@ -35,6 +40,17 @@ if not cap.begin():
 # Also you can specify an optional I2C bus with the bus keyword parameter.
 #cap.begin(busnum=1)
 
+# Init connection to webserver - request most recent activity from Db
+# this will also record the device's IP address in the Db
+# on booting, pause for 5 seconds while network is initialized
+time.sleep(5)
+
+r = requests.post(url+'/ip?address='+socket.gethostbyname(socket.gethostname()))
+
+r = requests.get(url+'/activity')
+print(r.status_code)
+print(r.content)
+
 # Main loop to print a message every time a pin is touched.
 print('Press Ctrl-C to quit.')
 last_touched = cap.touched()
@@ -50,8 +66,8 @@ while True:
         if current_touched & pin_bit and not last_touched & pin_bit:
             print('{0} touched!'.format(i))
             r = requests.post(url+'/activity?activity=touched&code='+str(i))
-            print r.status_code
-            print r.content
+            print(r.status_code)
+            print(r.content)
 
         # Next check if transitioned from touched to not touched.
         if not current_touched & pin_bit and last_touched & pin_bit:
