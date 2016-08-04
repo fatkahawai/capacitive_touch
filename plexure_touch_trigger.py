@@ -12,8 +12,14 @@ import sys
 import time
 import requests
 import socket
+from datetime import datetime
 
 import Adafruit_MPR121.MPR121 as MPR121
+
+print('\n\n=====================================================================')
+print('Adafruit MPR121 Capacitive Touch Sensor - send Trigger to Plexure API')
+print(str(datetime.now()))
+print('=====================================================================')
 
 #
 # Parse commandline arguments for URL to send REST POST request to
@@ -22,11 +28,10 @@ import Adafruit_MPR121.MPR121 as MPR121
 #    print('Error - missing command line argument - URL to POST updates to')
 #    sys.exit(1)
 
+# construct URL of the Plexure API endpoint 
+
 eventType = 'touch'
 url = 'https://workflow-events-ingest.azurewebsites.net/api/ingest/'+eventType
-
-print('\n\n=====================================================================')
-print('Adafruit MPR121 Capacitive Touch Sensor Test')
 print('posting activities to REST API at URL '+ url)
 
 # Create MPR121 instance.
@@ -79,14 +84,14 @@ while True:
         # First check if transitioned from not touched to touched.
         if current_touched & pin_bit and not last_touched & pin_bit:
             print('{0} touched!'.format(i))
-            r = requests.post(url+'/activity?activity=touched&code='+str(i))
+            r = requests.post(url, json = {"pin":str(i),"action":"touched"})
             print(r.status_code)
             print(r.content)
 
         # Next check if transitioned from touched to not touched.
         if not current_touched & pin_bit and last_touched & pin_bit:
             print('{0} released!'.format(i))
-            r = requests.post(url+'/activity?activity=released&code='+str(i))
+            r = requests.post(url, json = {"pin":str(i),"action":"released"})
             print r.status_code
             print r.content
 
