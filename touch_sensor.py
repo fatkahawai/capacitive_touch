@@ -45,7 +45,11 @@ if not cap.begin():
 # on booting, pause for 5 seconds while network is initialized
 time.sleep(5)
 
-r = requests.post(url+'/ip?address='+socket.gethostbyname(socket.gethostname()))
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+s.connect(('google.com', 0))
+localIp = s.getsockname()[0]
+print('my IP address on local LAN is '+localIp)
+r = requests.post(url+'/ip?address='+localIp)
 
 r = requests.get(url+'/activity')
 print(r.status_code)
